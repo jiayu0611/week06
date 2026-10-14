@@ -8,4 +8,22 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Ellipse.png" />
+    <None Remove="line.png" />
+    <None Remove="polyline.png" />
+    <None Remove="Rectangle.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="5.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Ellipse.png" />
+    <Resource Include="line.png" />
+    <Resource Include="polyline.png" />
+    <Resource Include="Rectangle.png" />
+  </ItemGroup>
+
 </Project>
