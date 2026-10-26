@@ -45,7 +45,10 @@ namespace week06
         {
             if (StatusLabel != null)
             {
-                StatusLabel.Content = $"圖形 : {shapeType} 座標:({start.X}, {start.Y})-({end.X}, {end.Y})";
+                if (actionType == "Draw")
+                {
+                    StatusLabel.Content = $"圖形 : {shapeType} 座標:({start.X}, {start.Y})-({end.X}, {end.Y})";
+                }
             }
             if (ColorLabel != null) ColorLabel.Content = $"筆刷色彩:{strokeColor}     填充色彩:{fillColor}     筆刷粗細:{strokeThickness}";
             if (ShapeLabel != null) ShapeLabel.Content = $"形狀:{shapeType}";
@@ -89,10 +92,21 @@ namespace week06
                         };
                         MyCanvas.Children.Add(line);
                         break;
+
                     case "Rectangle":
+                        Rectangle rect = new Rectangle
+                        {
+                            Stroke = Brushes.Gray,
+                            Fill = Brushes.LightGray
+                        };
+                        MyCanvas.Children.Add(rect);
+                        rect.SetValue(Canvas.LeftProperty, start.X);
+                        rect.SetValue(Canvas.TopProperty, start.Y);
                         break;
+
                     case "Ellipse":
                         break;
+
                     case "Polyline":
                         break;
                 }
@@ -109,7 +123,28 @@ namespace week06
                 case "Draw":
                     if (e.LeftButton == MouseButtonState.Pressed)
                     {
+                        Point origin;
+                        origin.X = Math.Min(start.X, end.X);
+                        origin.Y = Math.Min(start.Y, end.Y);
+                        double width = Math.Abs(start.X - start.X);
+                        double height = Math.Abs(start.Y - start.Y);
+                        switch (shapeType)
+                        {
+                            case "Line":
+                                var line = MyCanvas.Children.OfType<Line>().LastOrDefault();
+                                line.X2 = end.X;
+                                line.Y2 = end.Y;
+                                break;
 
+                                case "Rectangle":
+                                var rect = MyCanvas.Children.OfType<Rectangle>().LastOrDefault();
+                                rect.Width = width;
+                                rect.Height = height;
+                                rect.SetValue(Canvas.LeftProperty, origin.X);
+                                rect.SetValue(Canvas.TopProperty, origin.Y);
+                                break;
+
+                        }
                     }
                     break;
             }
@@ -117,7 +152,30 @@ namespace week06
 
         private void MyCanvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
+            Brush strokeBrush = new SolidColorBrush(strokeColor);
+            Brush fillBrush = new SolidColorBrush(fillColor);
 
+            switch (shapeType)
+            {
+                case "Line":
+                    var line = MyCanvas.Children.OfType<Line>().LastOrDefault() as Line;
+                    line.Stroke = strokeBrush;
+                    line.StrokeThickness = strokeThickness;
+                    break;
+
+                case "Rectangle":
+                    var rect = MyCanvas.Children.OfType<Rectangle>().LastOrDefault() as Rectangle;
+                    rect.Stroke = strokeBrush;
+                    rect.Fill = fillBrush;
+                    rect.StrokeThickness = strokeThickness;
+                    break;
+
+                case "Ellipse":
+                    break;
+
+                case "Polyline":
+                    break;
+            }
         }
     }
 }
