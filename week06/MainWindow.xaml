@@ -28,10 +28,10 @@
                     <Image Source="/line.png" />
                 </RadioButton>
                 <RadioButton Height="35" Width="35" FontSize="16" Checked="ShapeButton_Checked" FontWeight="Bold" Tag="Rectangle">
-                    <Image Source="/rectangle.png" />
+                    <Image Source="/Rectangle.png" />
                 </RadioButton>
                 <RadioButton Height="35" Width="35" FontSize="16" Checked="ShapeButton_Checked" FontWeight="Bold" Tag="Ellipse">
-                    <Image Source="/ellipse.png" />
+                    <Image Source="/Ellipse.png" />
                 </RadioButton>
                 <RadioButton Height="35" Width="35" FontSize="16" Checked="ShapeButton_Checked" FontWeight="Bold" Tag="Polyline">
                     <Image Source="/polyline.png" />
