@@ -1,12 +1,10 @@
-﻿using System.Numerics;
-using System.Security.Cryptography.Xml;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
-namespace week06
+namespace _2026_WpfApp3
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -28,16 +26,17 @@ namespace week06
             FillColorPicker.SelectedColor = fillColor;
         }
 
-        private void ShapeBotton_checked(object sender, RoutedEventArgs e)
+        private void ShapeButton_Checked(object sender, RoutedEventArgs e)
         {
             var targetShapeButton = sender as RadioButton;
             shapeType = targetShapeButton.Tag.ToString();
+            actionType = "Draw";
             DisplayStatus();
         }
 
         private void StrokeColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
-            strokeColor = ((Color)StrokeColorPicker.SelectedColor);
+            strokeColor = (Color)StrokeColorPicker.SelectedColor;
             DisplayStatus();
         }
 
@@ -47,11 +46,15 @@ namespace week06
             {
                 if (actionType == "Draw")
                 {
-                    StatusLabel.Content = $"圖形 : {shapeType} 座標:({start.X}, {start.Y})-({end.X}, {end.Y})";
+                    StatusLabel.Content = $"圖形：{shapeType}  座標：({start.X}, {start.Y}) - ({end.X},{end.Y})";
+                }
+                else
+                {
+                    StatusLabel.Content = $"工作模式：{actionType}";
                 }
             }
-            if (ColorLabel != null) ColorLabel.Content = $"筆刷色彩:{strokeColor}     填充色彩:{fillColor}     筆刷粗細:{strokeThickness}";
-            if (ShapeLabel != null) ShapeLabel.Content = $"形狀:{shapeType}";
+            if (ColorLabel != null) ColorLabel.Content = $"筆刷色彩:{strokeColor}     填充色彩:{fillColor}     筆刷粗細：{strokeThickness}";
+            if (ShapeLabel != null) ShapeLabel.Content = $"形狀：{shapeType}";
         }
 
         private void FillColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
@@ -66,15 +69,15 @@ namespace week06
             DisplayStatus();
         }
 
-        private void MtCanvas_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        private void MyCanvas_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
             MyCanvas.Cursor = Cursors.Pen;
         }
 
-        private void MtCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void MyCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             MyCanvas.Cursor = Cursors.Cross;
-            start  = e.GetPosition(MyCanvas);
+            start = e.GetPosition(MyCanvas);
 
             if (actionType == "Draw")
             {
@@ -99,15 +102,29 @@ namespace week06
                             Stroke = Brushes.Gray,
                             Fill = Brushes.LightGray
                         };
-                        MyCanvas.Children.Add(rect);
                         rect.SetValue(Canvas.LeftProperty, start.X);
                         rect.SetValue(Canvas.TopProperty, start.Y);
+                        MyCanvas.Children.Add(rect);
                         break;
 
                     case "Ellipse":
+                        Ellipse ellipse = new Ellipse
+                        {
+                            Stroke = Brushes.Gray,
+                            Fill = Brushes.LightGray
+                        };
+                        ellipse.SetValue(Canvas.LeftProperty, start.X);
+                        ellipse.SetValue(Canvas.TopProperty, start.Y);
+                        MyCanvas.Children.Add(ellipse);
                         break;
 
                     case "Polyline":
+                        Polyline polyline = new Polyline
+                        {
+                            Stroke = Brushes.Gray,
+                            Fill = Brushes.LightGray
+                        };
+                        MyCanvas.Children.Add(polyline);
                         break;
                 }
             }
@@ -120,14 +137,15 @@ namespace week06
 
             switch (actionType)
             {
-                case "Draw":
+                case "Draw": //繪圖模式
                     if (e.LeftButton == MouseButtonState.Pressed)
                     {
                         Point origin;
                         origin.X = Math.Min(start.X, end.X);
                         origin.Y = Math.Min(start.Y, end.Y);
-                        double width = Math.Abs(start.X - start.X);
-                        double height = Math.Abs(start.Y - start.Y);
+                        double width = Math.Abs(end.X - start.X);
+                        double height = Math.Abs(end.Y - start.Y);
+
                         switch (shapeType)
                         {
                             case "Line":
@@ -136,7 +154,7 @@ namespace week06
                                 line.Y2 = end.Y;
                                 break;
 
-                                case "Rectangle":
+                            case "Rectangle":
                                 var rect = MyCanvas.Children.OfType<Rectangle>().LastOrDefault();
                                 rect.Width = width;
                                 rect.Height = height;
@@ -144,13 +162,33 @@ namespace week06
                                 rect.SetValue(Canvas.TopProperty, origin.Y);
                                 break;
 
+                            case "Ellipse":
+                                var ellipse = MyCanvas.Children.OfType<Ellipse>().LastOrDefault();
+                                ellipse.Width = width;
+                                ellipse.Height = height;
+                                ellipse.SetValue(Canvas.LeftProperty, origin.X);
+                                ellipse.SetValue(Canvas.TopProperty, origin.Y);
+                                break;
+
+                            case "Polyline":
+                                var polyline = MyCanvas.Children.OfType<Polyline>().LastOrDefault();
+                                polyline.Points.Add(end);
+                                break;
+
                         }
                     }
+                    break;
+
+                case "Eraser": //橡皮擦模式
+                    MyCanvas.Cursor = Cursors.Hand;
+                    var shape = e.OriginalSource as Shape;
+                    MyCanvas.Children.Remove(shape);
+                    if (MyCanvas.Children.Count == 0) MyCanvas.Cursor = Cursors.Arrow;
                     break;
             }
         }
 
-        private void MyCanvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        private void MyCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             Brush strokeBrush = new SolidColorBrush(strokeColor);
             Brush fillBrush = new SolidColorBrush(fillColor);
@@ -171,11 +209,33 @@ namespace week06
                     break;
 
                 case "Ellipse":
+                    var ellipse = MyCanvas.Children.OfType<Ellipse>().LastOrDefault() as Ellipse;
+                    ellipse.Stroke = strokeBrush;
+                    ellipse.Fill = fillBrush;
+                    ellipse.StrokeThickness = strokeThickness;
                     break;
 
                 case "Polyline":
+                    var polyline = MyCanvas.Children.OfType<Polyline>().LastOrDefault() as Polyline;
+                    polyline.Stroke = strokeBrush;
+                    polyline.Fill = fillBrush;
+                    polyline.StrokeThickness = strokeThickness;
                     break;
             }
+        }
+
+        private void EraserButton_Click(object sender, RoutedEventArgs e)
+        {
+            actionType = "Eraser";
+            DisplayStatus();
+        }
+
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            actionType = "Clear";
+            MyCanvas.Children.Clear();
+            DisplayStatus();
+            actionType = "Draw";
         }
     }
 }
